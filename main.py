@@ -6,7 +6,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import psycopg2
 
-from cogs.fishing import Fishing
+from cogs.fishing_old import FishingOld
 
 #Retrieve secret keys
 dotenv_path = join(dirname(__file__), ".env")
@@ -22,7 +22,7 @@ print("Connection to database successful")
 
 #Create bot
 seguis = commands.Bot(command_prefix="$")
-seguis.add_cog(Fishing(seguis, cur, conn))
+seguis.add_cog(FishingOld(seguis, cur, conn))
 
 @seguis.command()
 async def repeat(ctx, m):
