@@ -8,6 +8,7 @@ import pymongo
 
 from cogs.surveilence import Surveilence
 from cogs.sheldon import Sheldon
+from cogs.fishing import Fishing
 
 #Retrieve secret keys
 dotenv_path = join(dirname(__file__), ".env")
@@ -18,21 +19,13 @@ BOT_KEY = os.environ.get("DISCORD_TOKEN")
 client = pymongo.MongoClient("mongodb+srv://ptandon:vikrant00@cluster0.d7gwd.mongodb.net/test?retryWrites=true&w=majority")
 
 survDB = client['surveilence']
-# text = survDB['text']
-# voice = survDB['voice']
-# test = survDB['test']
-
-# test.delete_many({ 'name': 'john', 'test': 5 })
-# test.insert_one({ 'name': 'john', 'test': 5 })
-# q = {'test': 5 }
-# ans = test.find(q)
-# for x in ans:
-#     print(x)
+fishDB = client['fishing']
 
 #Create bot
 seguis = commands.Bot(command_prefix="$")
 seguis.add_cog(Surveilence(seguis, survDB))
 seguis.add_cog(Sheldon(seguis))
+seguis.add_cog(Fishing(seguis, fishDB))
 
 @seguis.command()
 async def repeat(ctx, m):

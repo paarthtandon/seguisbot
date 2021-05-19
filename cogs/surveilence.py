@@ -20,7 +20,6 @@ class Surveilence(commands.Cog):
 
         id = message.author.id
         name = message.author.name
-        print('Message from', id, name)
 
         if users.find({'id': id}).count() == 0:
             users.insert_one({
