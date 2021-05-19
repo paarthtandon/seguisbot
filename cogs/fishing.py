@@ -18,12 +18,13 @@ class Fishing(commands.Cog):
         user = gift_to if gift_to else ctx.author
         weight, size = self.fish_from_pond()
 
-        last_time = users.find({'id': user.id})[0]['times']
-        if len(last_time) > 0:
-            last_time = last_time[-1][0]
-            if datetime.now() < last_time + timedelta(minutes=30):
-                await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=30)-datetime.now())))
-                return
+        if users.find({'id': user.id}).count() > 0:
+            last_time = users.find({'id': user.id})[0]['times']
+            if len(last_time) > 0:
+                last_time = last_time[-1][0]
+                if datetime.now() < last_time + timedelta(minutes=30):
+                    await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=30)-datetime.now())))
+                    return
 
         self.fish_update(user, datetime.now(), size, weight, ctx.author if gift_to else None)
         if gift_to:
