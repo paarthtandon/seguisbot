@@ -22,7 +22,7 @@ class Fishing(commands.Cog):
         if len(last_time) > 0:
             last_time = last_time[-1][0]
             if datetime.now() < last_time + timedelta(minutes=30):
-                await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=1)-datetime.now())))
+                await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=30)-datetime.now())))
                 return
 
         self.fish_update(user, datetime.now(), size, weight, ctx.author if gift_to else None)
