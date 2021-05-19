@@ -1,5 +1,6 @@
-from datetime import datetime
+from datetime import datetime, time, timedelta
 import random
+import matplotlib.pyplot as plt
 
 import discord
 from discord.ext import commands
@@ -13,8 +14,17 @@ class Fishing(commands.Cog):
 
     @commands.command()
     async def fish(self, ctx, gift_to: discord.User=None):
+        users = self.db['users']
         user = gift_to if gift_to else ctx.author
         weight, size = self.fish_from_pond()
+
+        last_time = users.find({'id': user.id})[0]['times']
+        if len(last_time) > 0:
+            last_time = last_time[-1][0]
+            if datetime.now() < last_time + timedelta(minutes=30):
+                await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=1)-datetime.now())))
+                return
+
         self.fish_update(user, datetime.now(), size, weight, ctx.author if gift_to else None)
         if gift_to:
             await ctx.send("{0} fished a {1} fish for {2} worth {3} points!"\
@@ -34,11 +44,22 @@ class Fishing(commands.Cog):
             return
 
         data = users.find({'id': user.id})[0]
-        out = '{0}\'s fishing stats\ntimes: {1}\npoints: {2}\ngifted: {3}\nsizes: {4}\ndata: {5}'.format(
-            username, data['count'], data['points'], data['gifted_points'], str(data['sizes']), str(data['times']))
-        await ctx.send(out)
+        out = '{0}\'s fishing stats\ntimes: {1}\npoints: {2}\ngifted: {3}\nsizes: {4}'.format(
+            username, data['count'], data['points'], data['gifted_points'], str(data['sizes']))
+        image = self.fish_graph(user)
+        await ctx.send(out, file=image)
 
     #Helper funcitons
+
+    def fish_graph(self, user):
+        users = self.db['users']
+        data = users.find({'id': user.id})[0]['times']
+        plt.plot(*zip(*data))
+        plt.xlabel('time')
+        plt.ylabel('points')
+        plt.savefig('temp/' + str(user.id) + '.png')
+        plt.clf()
+        return discord.File('temp/' + str(user.id) + '.png')
 
     def fish_from_pond(self):
         trash_gen = random.random()
@@ -82,7 +103,7 @@ class Fishing(commands.Cog):
                 'points': 0,
                 'count': 0,
                 'gifted_points': 0,
-                'fishing': []
+                'times': []
             })
             print('Created data for user', name)
 
@@ -98,33 +119,33 @@ class Fishing(commands.Cog):
                     'points': 0,
                     'count': 0,
                     'gifted_points': 0,
-                    'fishing': []
+                    'times': []
                 })
                 print('Created data for user', name)
 
-            cur_data = users.find({'id': gid})[0]
-            users.find_one_and_update({'id': gid}, {
+            cur_data = users.find({'id': id})[0]
+            users.find_one_and_update({'id': id}, {
                 "$set": {
-                    'name': gname,
+                    'name': name,
                     'points': cur_data['points'] + points,
                     'count': cur_data['count'] + 1
                 }
             })
-            users.find_one_and_update({'id': gid}, {
+            users.find_one_and_update({'id': id}, {
                 "$push": {
                     'times': (time, cur_data['points'])
                 }
             })
             m = 'sizes.' + size
-            users.find_one_and_update({'id': gid}, {
+            users.find_one_and_update({'id': id}, {
                 "$set": {
                     m: cur_data['sizes'][size] + 1
                 }
             })
-            cur_data = users.find({'id': id})[0]
-            users.find_one_and_update({'id': id}, {
+            cur_data = users.find({'id': gid})[0]
+            users.find_one_and_update({'id': gid}, {
                 "$set": {
-                    'name': name,
+                    'name': gname,
                     'gifted_points': cur_data['gifted_points'] + points
                 }
             })
