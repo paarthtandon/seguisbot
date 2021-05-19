@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import pymongo
 
 from cogs.surveilence import Surveilence
+from cogs.sheldon import Sheldon
 
 #Retrieve secret keys
 dotenv_path = join(dirname(__file__), ".env")
@@ -31,6 +32,7 @@ survDB = client['surveilence']
 #Create bot
 seguis = commands.Bot(command_prefix="$")
 seguis.add_cog(Surveilence(seguis, survDB))
+seguis.add_cog(Sheldon(seguis))
 
 @seguis.command()
 async def repeat(ctx, m):
