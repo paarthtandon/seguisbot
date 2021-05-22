@@ -30,7 +30,7 @@ class Surveilence(commands.Cog):
                 'times': [],
                 'joins_with': {}
             })
-            print('Created data for user', name)
+            print('Created surv data for user', name)
 
         content = message.content
         created_at = message.created_at
@@ -86,7 +86,7 @@ class Surveilence(commands.Cog):
                 'times': [],
                 'joins_with': {}
             })
-            print('Created data for user', name)
+            print('Created surv data for user', name)
 
         if before.channel is None and after.channel is not None:
             cur_data = users.find({'id': id})[0]

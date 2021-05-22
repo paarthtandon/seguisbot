@@ -18,16 +18,17 @@ class Fishing(commands.Cog):
         user = gift_to if gift_to else ctx.author
         weight, size = self.fish_from_pond()
 
-        if users.find({'id': user.id}).count() > 0:
-            last_time = users.find({'id': user.id})[0]['times']
+        if users.find({'id': ctx.author.id}).count() > 0:
+            last_time = users.find({'id': ctx.author.id})[0]['times']
             if len(last_time) > 0:
                 last_time = last_time[-1][0]
-                if datetime.now() < last_time + timedelta(minutes=60):
-                    print(user.name, last_time, datetime.now(), last_time + timedelta(minutes=60)-datetime.now())
-                    await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=60)-datetime.now())))
+                if datetime.utcnow() < last_time + timedelta(minutes=60):
+                    diff = (last_time + timedelta(minutes=60)) - datetime.utcnow()
+                    diff = str(diff).split(':')
+                    await ctx.send("You need to wait {0} minutes and {1} seconds until you can fish again!".format(diff[1], diff[2][:2]))
                     return
 
-        self.fish_update(user, datetime.now(), size, weight, ctx.author if gift_to else None)
+        self.fish_update(user, datetime.utcnow(), size, weight, ctx.author if gift_to else None)
         if gift_to:
             await ctx.send("{0} fished a {1} fish for {2} worth {3} points!"\
                 .format(ctx.author.mention, size, user.mention, weight))
@@ -76,7 +77,6 @@ class Fishing(commands.Cog):
             size = 'monster'
         else:
             gen = random.random()
-            print(gen)
             weight = gen * 100
             if weight < 1:
                 size = 'tiny'
@@ -106,7 +106,7 @@ class Fishing(commands.Cog):
                 'gifted_points': 0,
                 'times': []
             })
-            print('Created data for user', name)
+            print('Created fishing data for user', name)
 
         if gifted_from:
             gid = gifted_from.id
@@ -122,7 +122,7 @@ class Fishing(commands.Cog):
                     'gifted_points': 0,
                     'times': []
                 })
-                print('Created data for user', name)
+                print('Created fishing data for user', name)
 
             cur_data = users.find({'id': id})[0]
             users.find_one_and_update({'id': id}, {
