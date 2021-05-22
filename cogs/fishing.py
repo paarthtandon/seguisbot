@@ -129,13 +129,12 @@ class Fishing(commands.Cog):
             users.find_one_and_update({'id': id}, {
                 "$set": {
                     'name': name,
-                    'points': cur_data['points'] + points,
-                    'count': cur_data['count'] + 1
+                    'points': cur_data['points'] + points
                 }
             })
             users.find_one_and_update({'id': id}, {
                 "$push": {
-                    'times': (time, cur_data['points'])
+                    'times': (time, cur_data['points'] + points)
                 }
             })
             m = 'sizes.' + size
@@ -164,7 +163,7 @@ class Fishing(commands.Cog):
             })
             users.find_one_and_update({'id': id}, {
                 "$push": {
-                    'times': (time, cur_data['points'])
+                    'times': (time, cur_data['points'] + points)
                 }
             })
             m = 'sizes.' + size
