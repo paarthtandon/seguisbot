@@ -18,7 +18,7 @@ class Fishing(commands.Cog):
         user = gift_to if gift_to else ctx.author
         weight, size = self.fish_from_pond()
 
-        if users.find({'id': ctx.author.id}).count() > 0:
+        if user.id != 842785433624903690 and users.find({'id': ctx.author.id}).count() > 0:
             last_time = users.find({'id': ctx.author.id})[0]['times']
             if len(last_time) > 0:
                 last_time = last_time[-1][0]
