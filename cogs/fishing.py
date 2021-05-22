@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 import random
 import matplotlib.pyplot as plt
 
@@ -22,8 +22,9 @@ class Fishing(commands.Cog):
             last_time = users.find({'id': user.id})[0]['times']
             if len(last_time) > 0:
                 last_time = last_time[-1][0]
-                if datetime.now() < last_time + timedelta(minutes=30):
-                    await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=30)-datetime.now())))
+                if datetime.now() < last_time + timedelta(minutes=60):
+                    print(user.name, last_time, datetime.now(), last_time + timedelta(minutes=60)-datetime.now())
+                    await ctx.send("You need to wait {0} until you can fish again!".format(str(last_time + timedelta(minutes=60)-datetime.now())))
                     return
 
         self.fish_update(user, datetime.now(), size, weight, ctx.author if gift_to else None)
@@ -87,7 +88,6 @@ class Fishing(commands.Cog):
                 size = 'large'
             else:
                 size = 'huge'
-        print("Fished a {0} of size {1}".format(size, weight))
         return (int(weight), size)
 
     def fish_update(self, user, time, size, points, gifted_from):

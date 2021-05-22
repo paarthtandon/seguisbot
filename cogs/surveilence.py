@@ -1,7 +1,5 @@
 import discord
 from discord.ext import commands
-import pymongo
-from pymongo.message import update
 
 
 class Surveilence(commands.Cog):
@@ -19,7 +17,7 @@ class Surveilence(commands.Cog):
         users = self.db['users']
 
         id = message.author.id
-        name = message.author.name
+        name = message.author.nick if message.author.nick is not None else message.author.name
 
         if users.find({'id': id}).count() == 0:
             users.insert_one({
@@ -29,7 +27,8 @@ class Surveilence(commands.Cog):
                 'pinned': 0,
                 'count': 0,
                 'total_len': 0,
-                'times': []
+                'times': [],
+                'joins_with': {}
             })
             print('Created data for user', name)
 
@@ -71,7 +70,43 @@ class Surveilence(commands.Cog):
                 })
 
     def update_voice_data(self, member, before, after):
-        pass
+        users = self.db['users']
+
+        id = member.id
+        name = member.nick if member.nick is not None else member.name
+
+        if users.find({'id': id}).count() == 0:
+            users.insert_one({
+                'id': id,
+                'name': name,
+                'mentions': {},
+                'pinned': 0,
+                'count': 0,
+                'total_len': 0,
+                'times': [],
+                'joins_with': {}
+            })
+            print('Created data for user', name)
+
+        if before.channel is None and after.channel is not None:
+            cur_data = users.find({'id': id})[0]
+            members = after.channel.members
+            for me in members:
+                if me.id != id:
+                    m = 'joins_with.' + str(me.id)
+                    if str(me.id) not in cur_data['joins_with']:
+                        users.find_one_and_update({'id': id}, {
+                            "$set": {
+                                m: 1
+                            }
+                        })
+                    else:
+                        users.find_one_and_update({'id': id}, {
+                            "$set": {
+                                m: cur_data['joins_with'][str(me.id)] + 1
+                            }
+                        })
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -94,9 +129,16 @@ class Surveilence(commands.Cog):
         data = users.find({'id': user.id})[0]
         user_mentions = {}
         for key, val in data['mentions'].items():
-            name = await ctx.guild.fetch_member(int(key))
-            user_mentions[name.nick] = val
+            u = await ctx.guild.fetch_member(int(key))
+            name = u.nick if u.nick is not None else u.name
+            user_mentions[name] = val
 
-        out = '{0}\'s stats\nmessages: {1}\npins: {2}\ntotal len: {3}\nmentions: {4}'.format(
-            username, data['count'], data['pinned'], data['total_len'], str(user_mentions))
+        joins_with = {}
+        for key, val in data['joins_with'].items():
+            u = await ctx.guild.fetch_member(int(key))
+            name = u.nick if u.nick is not None else u.name
+            joins_with[name] = val
+
+        out = '{0}\'s stats\nmessages: {1}\npins: {2}\ntotal len: {3}\nmentions: {4}\njoins_with: {5}'.format(
+            username, data['count'], data['pinned'], data['total_len'], str(user_mentions), str(joins_with))
         await ctx.send(out)
