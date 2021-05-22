@@ -18,10 +18,9 @@ class Fishing(commands.Cog):
         user = gift_to if gift_to else ctx.author
         weight, size = self.fish_from_pond()
 
-        if user.id != 842785433624903690 and users.find({'id': ctx.author.id}).count() > 0:
-            last_time = users.find({'id': ctx.author.id})[0]['times']
-            if len(last_time) > 0:
-                last_time = last_time[-1][0]
+        if ctx.author.id != 842785433624903690 and users.find({'id': ctx.author.id}).count() > 0:
+            last_time = users.find({'id': ctx.author.id})[0]['last_fished']
+            if last_time != None:
                 if datetime.utcnow() < last_time + timedelta(minutes=60):
                     diff = (last_time + timedelta(minutes=60)) - datetime.utcnow()
                     diff = str(diff).split(':')
@@ -104,6 +103,7 @@ class Fishing(commands.Cog):
                 'points': 0,
                 'count': 0,
                 'gifted_points': 0,
+                'last_fished': None,
                 'times': []
             })
             print('Created fishing data for user', name)
@@ -120,6 +120,7 @@ class Fishing(commands.Cog):
                     'points': 0,
                     'count': 0,
                     'gifted_points': 0,
+                    'last_fished': None,
                     'times': []
                 })
                 print('Created fishing data for user', name)
@@ -147,7 +148,8 @@ class Fishing(commands.Cog):
             users.find_one_and_update({'id': gid}, {
                 "$set": {
                     'name': gname,
-                    'gifted_points': cur_data['gifted_points'] + points
+                    'gifted_points': cur_data['gifted_points'] + points,
+                    'last_fished': time
                 }
             })
         else:
@@ -156,7 +158,8 @@ class Fishing(commands.Cog):
                 "$set": {
                     'name': name,
                     'points': cur_data['points'] + points,
-                    'count': cur_data['count'] + 1
+                    'count': cur_data['count'] + 1,
+                    'last_fished': time
                 }
             })
             users.find_one_and_update({'id': id}, {
