@@ -51,6 +51,19 @@ class Fishing(commands.Cog):
         image = self.fish_graph(user)
         await ctx.send(out, file=image)
 
+    @commands.command()
+    async def top(self, ctx):
+        users = self.db['users'].find({})
+        t = []
+        for user in users:
+            if user['id'] != 842785433624903690:
+                t.append((user['name'], user['points']))
+        t = sorted(t, key=lambda x: x[1], reverse=True)[:15]
+        out = ''
+        for i, user in enumerate(t):
+            out += '{0}. {1} - {2} points\n'.format(i + 1, user[0], user[1])
+        await ctx.send(out)
+
     #Helper funcitons
 
     def fish_graph(self, user):
