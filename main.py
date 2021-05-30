@@ -9,6 +9,7 @@ import pymongo
 from cogs.surveilence import Surveilence
 from cogs.sheldon import Sheldon
 from cogs.fishing import Fishing
+from cogs.quinn import Quinn
 
 #Retrieve secret keys
 dotenv_path = join(dirname(__file__), ".env")
@@ -26,6 +27,7 @@ seguis = commands.Bot(command_prefix="$")
 seguis.add_cog(Surveilence(seguis, survDB))
 seguis.add_cog(Sheldon(seguis))
 seguis.add_cog(Fishing(seguis, fishDB))
+seguis.add_cog(Quinn(seguis))
 
 @seguis.command()
 async def repeat(ctx, m):
