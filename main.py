@@ -21,12 +21,13 @@ client = pymongo.MongoClient("mongodb+srv://ptandon:vikrant00@cluster0.d7gwd.mon
 
 survDB = client['surveilence']
 fishDB = client['fishing']
+superDB = client['bot']
 
 #Create bot
 seguis = commands.Bot(command_prefix="$")
 seguis.add_cog(Surveilence(seguis, survDB))
 seguis.add_cog(Sheldon(seguis))
-seguis.add_cog(Fishing(seguis, fishDB))
+seguis.add_cog(Fishing(seguis, fishDB, superDB))
 seguis.add_cog(Quinn(seguis))
 
 @seguis.command()

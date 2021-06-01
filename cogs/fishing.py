@@ -6,9 +6,10 @@ import discord
 from discord.ext import commands
 
 class Fishing(commands.Cog):
-    def __init__(self, bot, db):
+    def __init__(self, bot, db, superdb):
         self.bot = bot
         self.db = db
+        self.superdb = superdb
 
     #Commands
 
@@ -16,6 +17,26 @@ class Fishing(commands.Cog):
     async def fish(self, ctx, gift_to: discord.User=None):
         users = self.db['users']
         user = gift_to if gift_to else ctx.author
+
+        if ctx.channel.id != 845731556375134258:
+            cur_data = users.find({'id': ctx.author.id})[0]
+            penalty = cur_data['points'] * 0.05
+            users.find_one_and_update({'id': ctx.author.id}, {
+                "$set": {
+                    'points': cur_data['points'] - penalty
+                }
+            })
+
+            bank = self.superdb['bank']
+            cur_amount = bank.find({'id': 0})[0]
+            bank.find_one_and_update({'id': 0}, {
+                "$set": {
+                    'amount': cur_amount['amount'] + penalty
+                }
+            })
+            await ctx.send('You\'re not allowed to fish around these parts, {0}. The Seguis authority has confiscated your fish and you have incurred a penalty worth 5% of your total bank account.'.format(cur_data['name']))
+            return
+
         weight, size = self.fish_from_pond()
 
         if ctx.author.id != 842785433624903690 and users.find({'id': ctx.author.id}).count() > 0:
@@ -29,10 +50,10 @@ class Fishing(commands.Cog):
 
         self.fish_update(user, datetime.utcnow(), size, weight, ctx.author if gift_to else None)
         if gift_to:
-            await ctx.send("{0} fished a {1} fish for {2} worth {3} points!"\
+            await ctx.send("{0} fished a {1} fish for {2} worth ${3}!"\
                 .format(ctx.author.mention, size, user.mention, weight))
         else:
-            await ctx.send("{0} fished a {1} fish worth {2} points!"\
+            await ctx.send("{0} fished a {1} fish worth ${2}!"\
                 .format(ctx.author.mention, size, weight))
 
     @commands.command()
@@ -46,7 +67,7 @@ class Fishing(commands.Cog):
             return
 
         data = users.find({'id': user.id})[0]
-        out = '{0}\'s fishing stats\ntimes: {1}\npoints: {2}\ngifted: {3}\nsizes: {4}'.format(
+        out = '{0}\'s fishing stats\ntimes: {1}\nMoney: ${2}\ngifted: ${3}\nsizes: {4}'.format(
             username, data['count'], data['points'], data['gifted_points'], str(data['sizes']))
         image = self.fish_graph(user)
         await ctx.send(out, file=image)
@@ -86,6 +107,12 @@ class Fishing(commands.Cog):
             size = 'trash'
         elif monster:
             weight = 100
+            if monster_gen < .01:
+                weight = 1000
+            if monster_gen < .001:
+                weight = 10000
+            if monster_gen < .0001:
+                weight = 100000
             size = 'monster'
         else:
             gen = random.random()
