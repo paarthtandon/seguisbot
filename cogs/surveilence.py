@@ -135,10 +135,44 @@ class Surveilence(commands.Cog):
 
         joins_with = {}
         for key, val in data['joins_with'].items():
-            u = await ctx.guild.fetch_member(int(key))
+            try:
+                u = await ctx.guild.fetch_member(int(key))
+            except:
+                continue
             name = u.nick if u.nick is not None else u.name
             joins_with[name] = val
 
         out = '{0}\'s stats\nmessages: {1}\npins: {2}\ntotal len: {3}\nmentions: {4}\njoins_with: {5}'.format(
             username, data['count'], data['pinned'], data['total_len'], str(user_mentions), str(joins_with))
+        await ctx.send(out)
+
+    @commands.command()
+    async def mostpopular(self, ctx):
+        users = self.db['users']
+        
+        data = users.find({})
+        scores = {}
+        for document in data:
+            mentions = document['mentions']
+            joins_with = document['joins_with']
+
+            for key, val in mentions.items():
+                if key not in scores:
+                    scores[key] = 0
+                scores[key] += (.5 * val)
+            
+            for key, val in joins_with.items():
+                if key not in scores:
+                    scores[key] = 0
+                scores[key] += (1 * val)
+
+        top = sorted(list(scores.items()), key=lambda x: x[1], reverse=True)[:15]
+        out = ''
+        for i, user in enumerate(top):
+            try:
+                u = await ctx.guild.fetch_member(int(user[0]))
+                name = u.nick if u.nick is not None else u.name
+            except:
+                name = 'User is no longer with us'
+            out += '{0}. {1} - {2} points\n'.format(i + 1, name, user[1])
         await ctx.send(out)
