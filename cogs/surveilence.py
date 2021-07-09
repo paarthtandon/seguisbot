@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+import itertools
+
 
 class Surveilence(commands.Cog):
     def __init__(self, bot, db):
@@ -175,4 +177,60 @@ class Surveilence(commands.Cog):
             except:
                 name = 'User is no longer with us'
             out += '{0}. {1} - {2} points\n'.format(i + 1, name, user[1])
+        await ctx.send(out)
+
+    @commands.command()
+    async def bestcouples(self, ctx):
+        users = self.db['users']
+        
+        data = users.find({})
+        relations = {}
+        ids = []
+        for document in data:
+            ids.append(document['id'])
+
+            relations[document['id']] = {}
+            joins_with = document['joins_with']
+            mentions = document['mentions']
+
+            scores = {}
+
+            # for key, val in mentions.items():
+            #     if key not in scores:
+            #         scores[key] = 0
+            #     scores[key] += (.5 * val)
+            
+            for key, val in joins_with.items():
+                if key not in scores:
+                    scores[key] = 0
+                scores[key] += (1 * val)
+
+            top = sorted(list(scores.items()), key=lambda x: x[1], reverse=True)
+            top = [t for t in top if t[1] >= 20][:5]
+
+            s = [5, 4, 3, 2, 1]
+            for i, t in enumerate(top):
+                relations[document['id']][t[0]] = s[i]
+            
+            if len(top) < 2:
+                del relations[document['id']]
+
+        combos = list(itertools.combinations(list(relations.keys()), 2))
+
+        combo_scores = {}
+        for combo in combos:
+            try:
+                score = relations[combo[0]][str(combo[1])] + relations[combo[1]][str(combo[0])]
+                combo_scores[combo] = score
+            except:
+                continue
+
+        top = sorted(list(combo_scores.items()), key=lambda x: x[1], reverse=True)[:5]
+        out = 'Top Couples:\n'
+        for i, t in enumerate(top):
+            l = await ctx.guild.fetch_member(int(t[0][0]))
+            l = l.nick if l.nick is not None else l.name
+            r = await ctx.guild.fetch_member(int(t[0][1]))
+            r = r.nick if r.nick is not None else r.name
+            out += '{0}. {1} ❤️ {2}\n'.format(i + 1, l, r)
         await ctx.send(out)
