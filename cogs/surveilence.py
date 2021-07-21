@@ -225,6 +225,8 @@ class Surveilence(commands.Cog):
             except:
                 continue
 
+        print(combo_scores)
+
         top = sorted(list(combo_scores.items()), key=lambda x: x[1], reverse=True)[:5]
         out = 'Top Couples:\n'
         for i, t in enumerate(top):
