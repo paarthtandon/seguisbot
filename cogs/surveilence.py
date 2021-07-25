@@ -234,5 +234,6 @@ class Surveilence(commands.Cog):
             l = l.nick if l.nick is not None else l.name
             r = await ctx.guild.fetch_member(int(t[0][1]))
             r = r.nick if r.nick is not None else r.name
-            out += '{0}. {1} ❤️ {2}\n'.format(i + 1, l, r)
+            score = int(t[1])
+            out += '{0}. {1} ❤️ {2} ({3} points)\n'.format(i + 1, l, r, score)
         await ctx.send(out)
