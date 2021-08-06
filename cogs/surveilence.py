@@ -2,8 +2,6 @@ import discord
 from discord.ext import commands
 
 import itertools
-
-
 class Surveilence(commands.Cog):
     def __init__(self, bot, db):
         self.bot = bot
