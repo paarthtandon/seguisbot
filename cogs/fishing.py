@@ -62,7 +62,7 @@ class Fishing(commands.Cog):
         user = other_user if other_user else ctx.author
         username = await ctx.guild.fetch_member(user.id)
 
-        if users.find({'id': user.id}).count() == 0:
+        if users.count_documents({'id': user.id}) == 0:
             await ctx.send("User not found!")
             return
 
@@ -135,7 +135,7 @@ class Fishing(commands.Cog):
         id = user.id
         name = user.name
 
-        if users.find({'id': id}).count() == 0:
+        if users.count_documents({'id': id}) == 0:
             users.insert_one({
                 'id': id,
                 'name': name,
@@ -152,7 +152,7 @@ class Fishing(commands.Cog):
             gid = gifted_from.id
             gname = gifted_from.name
 
-            if users.find({'id': gid}).count() == 0:
+            if users.count_documents({'id': gid}) == 0:
                 users.insert_one({
                     'id': gid,
                     'name': gname,
