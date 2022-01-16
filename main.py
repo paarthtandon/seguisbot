@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import pymongo
-from sqlalchemy import create_engine
 
 from cogs.sheldon import Sheldon
 from cogs.fishing import Fishing
