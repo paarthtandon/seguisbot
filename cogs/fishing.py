@@ -18,7 +18,7 @@ class Fishing(commands.Cog):
         users = self.db['users']
         user = gift_to if gift_to else ctx.author
 
-        if ctx.channel.id != 845731556375134258:
+        if ctx.channel.id != 932090786466644028:
             cur_data = users.find({'id': ctx.author.id})[0]
             penalty = cur_data['points'] * 0.05
             users.find_one_and_update({'id': ctx.author.id}, {
