@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import pymongo
+import ssl
 
 from cogs.sheldon import Sheldon
 from cogs.fishing import Fishing
@@ -17,7 +18,7 @@ BOT_KEY = os.environ.get("DISCORD_TOKEN")
 MONGO = os.environ.get("MONGO")
 
 #Connect to databases
-client = pymongo.MongoClient(MONGO)
+client = pymongo.MongoClient(MONGO, ssl_cert_reqs=ssl.CERT_NONE)
 
 fishDB = client['fishing']
 superDB = client['bot']

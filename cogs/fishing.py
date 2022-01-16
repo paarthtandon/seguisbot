@@ -39,7 +39,7 @@ class Fishing(commands.Cog):
 
         weight, size = self.fish_from_pond()
 
-        if ctx.author.id != 842785433624903690 and users.find({'id': ctx.author.id}).count() > 0:
+        if ctx.author.id != 842785433624903690 and users.count_documents({'id': ctx.author.id}) > 0:
             last_time = users.find({'id': ctx.author.id})[0]['last_fished']
             if last_time != None:
                 if datetime.utcnow() < last_time + timedelta(minutes=60):
